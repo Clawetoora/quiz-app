@@ -2,7 +2,6 @@
 import styles from "./page.module.css";
 import { useState, useEffect } from "react";
 import Result from "./results";
-import Timer from "./timer";
 import Image from "next/image";
 import { Barlow_Semi_Condensed } from "next/font/google";
 import vcsLogo from "../../public/vcs.png";
@@ -15,14 +14,47 @@ export default function Home() {
   const questions = [
     { id: 1, question: "Jūsų vardas" },
     { id: 2, question: "Lietuvos ilgiausia upė?", answer: "Nemunas" },
-    { id: 3, question: "Jūsų pavardė" },
+    {
+      id: 3,
+      question:
+        "Programavimo kalba kurios pavadinimas toks pat kaip gyvačių rūšies?",
+      answer: "Python",
+    },
     { id: 4, question: "Lietuvos vienintelis karalius?", answer: "Mindaugas" },
     {
       id: 5,
       question: "Kokia tai programavimo kalba? J*V*SC*I*T",
       answer: "javascript",
     },
-    { id: 6, question: "Jusu el. pastas", answer: "" },
+    {
+      id: 6,
+      question:
+        "„Dirbtinis intelektas“ anglų kalboje trumpinamas... (dvi raidės)",
+      answer: "AI",
+    },
+    {
+      id: 7,
+      question: "Žinomiausia paieškos sistema?",
+      answer: "google",
+    },
+    {
+      id: 8,
+      question:
+        "Kokio žodžio trūksta šio kompiuterinio viruso pavadinime: ...... arklys",
+      answer: "trojos",
+    },
+    {
+      id: 9,
+      question: "Kilobaitas, ........, gigabaitas. Ko trūksta?",
+      answer: "megabaitas",
+    },
+    { id: 10, question: "Kokia raidė čia praleista? QW*RTY", answer: "e" },
+    {
+      id: 11,
+      question: "Operacinė sistema Microsoft .......",
+      answer: "windows",
+    },
+    { id: 12, question: "Jūsų el. paštas", answer: "" },
   ];
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [answer, setAnswer] = useState("");
@@ -33,6 +65,8 @@ export default function Home() {
   const [time, setTime] = useState(0);
   const [score, setScore] = useState(0);
   const [data, setData] = useState([]);
+  const [validEmail, setValidEmail] = useState(true);
+  // const [color, setColor] = useState("");
 
   useEffect(() => {
     const storedData = localStorage.getItem("answersData");
@@ -44,11 +78,11 @@ export default function Home() {
   }, [answersArray]);
 
   useEffect(() => {
-    answer.length < 3 ? setDisabled(true) : setDisabled(false);
+    answer.length < 1 ? setDisabled(true) : setDisabled(false);
   }, [answer]);
   useEffect(() => {
     const keyDownHandler = (event) => {
-      if (event.key === "Enter" && answer.length > 2) {
+      if (event.key === "Enter" && answer.length >= 1) {
         event.preventDefault();
 
         handleClick();
@@ -75,10 +109,7 @@ export default function Home() {
     if (arr[0].length > 1) {
       score++;
     }
-    if (arr[2].length > 1) {
-      score++;
-    }
-    if (arr[5].length > 1) {
+    if (arr[11].length > 1) {
       score++;
     }
     return score;
@@ -92,14 +123,24 @@ export default function Home() {
       setAnswersArray([...answersArray, answer]);
       setAnswer("");
     } else {
+      if (
+        currentQuestion === 12 &&
+        answer.includes("@") &&
+        answer.includes(".")
+      ) {
+        const updatedAnswersArray = [...answersArray, answer, time];
+        setAnswersArray(updatedAnswersArray);
+        setScore(getScore(updatedAnswersArray));
+        // console.log(answersArray);
+        setShowResult(true);
+        setStarted(false);
+        setAnswer("");
+        setValidEmail(true);
+      } else {
+        // console.log("nera@@@@");
+        setValidEmail(false);
+      }
       // console.log(time);
-      const updatedAnswersArray = [...answersArray, answer, time];
-      setAnswersArray(updatedAnswersArray);
-      setScore(getScore(updatedAnswersArray));
-      // console.log(answersArray);
-      setShowResult(true);
-      setStarted(false);
-      setAnswer("");
     }
   };
 
@@ -122,8 +163,13 @@ export default function Home() {
         name: answersArray[0],
         score:
           score <= 3
-            ? Math.trunc((score / answersArray[6]) * 10000)
-            : Math.trunc((score / answersArray[6]) * 100000),
+            ? Math.trunc(
+                (score / answersArray[answersArray.length - 1]) * 10000
+              )
+            : Math.trunc(
+                (score / answersArray[answersArray.length - 1]) * 200000
+              ),
+        email: answersArray[answersArray.length - 2],
       },
     ];
 
@@ -145,15 +191,25 @@ export default function Home() {
       clearInterval(interval);
     }
     setTime(time);
+    // if (time > 0 && time % 2000 === 0) {
+    //   setColor("#ff0000");
+    //   setTimeout(() => {
+    //     setColor("");
+    //   }, 1000);
+    // }
+
     return () => clearInterval(interval);
-  }, [started]);
+  }, [started, time]);
 
   return (
     <main style={barlowSemi.style} className={styles.main}>
       <nav className={styles.nav}>
         <Image className={styles.img} src={vcsLogo} alt="Vcs logo" />
       </nav>
-      <div className={started ? styles.timer : styles.hiddenTimer}>
+      <div
+        // style={{ backgroundColor: color }}
+        className={started ? styles.timer : styles.hiddenTimer}
+      >
         <div className="stopwatch">
           <div className="numbers">
             <span>{("0" + Math.floor((time / 60000) % 60)).slice(-2)}:</span>
@@ -165,21 +221,35 @@ export default function Home() {
       <div className={styles.container}>
         {!started && showResult === false && (
           <>
-            <div>
+            <div className={styles.top5}>
               <h1 className={styles.resultsh1}>TOP 5 rezultatai</h1>
               <div className={styles.scoreBox}>
                 <p className={styles.player}>Vardas</p>
                 <p className={styles.scoras}>Taškai</p>
               </div>
               {data.map((data, index) => {
-                if (index < 5) {
+                if (index <= 2) {
                   return (
-                    <>
-                      <div className={styles.scoreBox} key={index}>
+                    <div key={index}>
+                      <div className={styles.scoreBox}>
+                        <div className={styles.playername}>
+                          <div className={styles[`place${index + 1}`]}>
+                            {index + 1}
+                          </div>
+                          <p>{data.name}</p>
+                        </div>
+                        <p className={styles.score}>{data.score} </p>
+                      </div>
+                    </div>
+                  );
+                } else if (index > 2 && index < 5) {
+                  return (
+                    <div key={index}>
+                      <div className={styles.scoreBox}>
                         <p className={styles.playername}>{data.name}</p>
                         <p className={styles.score}>{data.score} </p>
                       </div>
-                    </>
+                    </div>
                   );
                 }
               })}
@@ -204,9 +274,14 @@ export default function Home() {
               name="answer"
               value={answer}
               onChange={handleChange}
-              minLength={3}
+              minLength={1}
               required
             ></input>
+            {!validEmail && (
+              <p className={styles.emailWarning}>
+                Neteisingas el. pašto adresas
+              </p>
+            )}
             <button
               style={barlowSemi.style}
               className={disabled ? styles.btndisabled : styles.btn}
@@ -220,9 +295,8 @@ export default function Home() {
         {!started && showResult && (
           <>
             <Result
-              email={answersArray[5]}
+              email={answersArray[11]}
               name={answersArray[0]}
-              lastname={answersArray[2]}
               time={time}
               result={score}
             ></Result>
