@@ -9,6 +9,9 @@ export default function Result(props) {
         Jūs atsakėte teisingai į{" "}
         <span style={{ color: "#29F206" }}>{props.result} </span>klausimus per{" "}
         <span style={{ color: "#29F206" }}>
+          {("0" + Math.floor((props.time / 1000 / 60) % 60)).slice(-2)}min{" "}
+        </span>
+        <span style={{ color: "#29F206" }}>
           {("0" + Math.floor((props.time / 1000) % 60)).slice(-2)}s{" "}
         </span>
         <span style={{ color: "#29F206" }}>
